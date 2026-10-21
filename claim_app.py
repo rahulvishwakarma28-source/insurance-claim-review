@@ -27,7 +27,7 @@ st.sidebar.write(
 st.caption(
     "Use fictional details only. Claim details are sent to OpenAI "
     "to prepare the summary. Document names are checked, "
-    "but document contents and authenticity are not verified."
+    "but document contents and authenticity are not verified. Use fictional sample files only."
 )
 
 with st.form("claim_form"):
@@ -65,10 +65,42 @@ with st.form("claim_form"):
         value=date(2026, 6, 15)
     )
 
-    documents = st.multiselect(
-        "Documents listed with the claim",
-        ["ID proof", "Claim form", "Hospital bill"],
-        default=["ID proof", "Claim form", "Hospital bill"]
+    st.write("Upload fictional sample documents.")
+
+    id_proof_file = st.file_uploader(
+        "ID proof",
+        type=["pdf", "png", "jpg", "jpeg"],
+        key="id_proof_upload"
+    )
+
+    claim_form_file = st.file_uploader(
+        "Claim form",
+        type=["pdf", "png", "jpg", "jpeg"],
+        key="claim_form_upload"
+    )
+
+    hospital_bill_file = st.file_uploader(
+        "Hospital bill",
+        type=["pdf", "png", "jpg", "jpeg"],
+        key="hospital_bill_upload"
+    )
+
+    uploaded_documents = {
+        "ID proof": id_proof_file,
+        "Claim form": claim_form_file,
+        "Hospital bill": hospital_bill_file
+    }
+
+    documents = [
+        name
+        for name, uploaded_file in uploaded_documents.items()
+        if uploaded_file is not None and uploaded_file.size > 0
+    ]
+
+    st.caption(
+        "The document check confirms that a non-empty file was uploaded "
+        "for each required document. File contents and authenticity "
+        "are not verified. Uploaded files are not sent to OpenAI."
     )
 
     consent = st.checkbox(
@@ -135,7 +167,7 @@ if result:
     st.write("**Hospital bill:**", f"₹{result['bill_amount']:,.2f}")
 
     st.write(
-        "**All required documents listed:**",
+        "**All required documents uploaded:**",
         "Yes" if result["documents_valid"] else "No"
     )
 
